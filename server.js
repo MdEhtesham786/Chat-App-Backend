@@ -21,6 +21,11 @@ const io = new Server(server, {
         credentials: true
     }
 });
+app.use(cors({
+  origin: '*', // or specify your Expo app's domain
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 import userModel from "./models/userModel.js";
 const hostname = '127.0.0.1';
 const port = process.env.PORT || 5001;
@@ -62,6 +67,8 @@ import userRoute from "./routes/userRoute.js";
 import { isAuthenticatedUser } from './middleware/auth.js';
 import jwt from "jsonwebtoken";
 // const productModel = require('./models/productModel.js');
+io.origins(['https://chat-app-backend-b3ys.onrender.com']);
+
 io.on("connection", (socket) => {
     console.log('Connected', socket.id);
     socket.on('sendMessage', ({ room, message }) => {
