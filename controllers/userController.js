@@ -195,7 +195,6 @@ export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
             hasProfile
         });
     } else {
-        console.log('THree');
 
         user.otp = null;
         const newUser = new userModel({
