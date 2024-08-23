@@ -179,8 +179,10 @@ export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
     }
     // res.clearCookie("verifyOtp");
     const User = await userModel.findOne({ email: user.email });
-
+    console.log('One');
     if (User) {
+        console.log('Two');
+
         if (User.firstname) {
             hasProfile = true;
         }
@@ -193,9 +195,11 @@ export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
             hasProfile
         });
     } else {
+        console.log('THree');
+
         user.otp = null;
         const newUser = new userModel({
-            email: 'mdehteshamshaikh1@gmail.com',
+            email: user.email,
             roles: user.roles,
             otp: null,
         });
