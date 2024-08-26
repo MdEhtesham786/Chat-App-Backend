@@ -4,7 +4,9 @@ import userModel from "../models/userModel.js";
 import { sendToken, sendCookie, } from '../utils/jwtToken.js';
 import sendEmail from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
+
 export const login = catchAsyncErrors(async (req, res, next) => {
+
     const { email, password, remember } = req.body;
     if (email) {
         const user = await userModel.findOne({ email }).select('+password');
@@ -179,20 +181,22 @@ export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
     }
     // res.clearCookie("verifyOtp");
     const User = await userModel.findOne({ email: user.email });
-    console.log('One');
     if (User) {
-        console.log('Two');
-
         if (User.firstname) {
             hasProfile = true;
         }
         User.otp = null;
         await User.save({ validateBeforeSave: true });
+        const token = User.generateToken(10 * 60 * 1000);
+        if (!token) {
+            return next(new ErrorHandler('Token not created, please try again', 400));
+        }
         console.log('OTP Matched Successfully');
         return res.json({
             success: true,
             user: User,
-            hasProfile
+            hasProfile,
+            token
         });
     } else {
 
@@ -203,13 +207,17 @@ export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
             otp: null,
         });
         await newUser.save();
-        console.log(user);
-
+        const token = newUser.generateToken(10 * 60 * 1000);
+        if (!token) {
+            return next(new ErrorHandler('Token not created, please try again', 400));
+        }
         console.log('OTP Matched Successfully');
         return res.json({
             success: true,
             user: newUser,
-            hasProfile
+            hasProfile,
+            token
+
         });
     }
     // await user.save({ validateBeforeSave: true });
@@ -220,31 +228,55 @@ export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
 
 });
 export const addProfile = catchAsyncErrors(async (req, res, next) => {
-    const { user, data } = req.body;
+    const { token, data } = req.body;
     if (!data) {
         return next(new ErrorHandler('Please provide the required info', 400));
     }
-    if (!user) {
-        return next(new ErrorHandler('Something went wrong', 500));
+    if (!token) {
+        return next(new ErrorHandler('Token not found', 500));
     }
-    const User = await userModel.findOneAndUpdate({ user: user.email }, { firstname: data.firstname, lastname: data.lastname }, { runValidators: true, new: true });
-    if (!User) {
-        return next(new ErrorHandler('User not found', 400));
-    }
-    // await User.save();
+    const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await userModel.findById({ _id: decodedData.id });
+    const User = await userModel.findOneAndUpdate({ email: user.email }, { firstname: data.firstname, lastname: data.lastname }, { runValidators: true, new: true });
+    console.log(User);
+    await User.save();
+    return res.json({
+        success: true,
+        user
+    });
+});
+
+export const home = catchAsyncErrors(async (req, res, next) => {
+    const { token } = req.body;
+    // const User = await userModel.findOne({ email: user.email });
     res.json({
         success: true,
         user: User
     });
 });
-
-export const home = catchAsyncErrors(async (req, res, next) => {
-    const { user } = req.body;
-    const User = await userModel.findOne({ email: user.email });
-    res.json({
-        success: true,
-        user: User
-    });
+export const isLoggedInUser = catchAsyncErrors(async (req, res, next) => {
+    const { token } = req.body;
+    let hasProfile = false;
+    if (token) {
+        const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await userModel.findById({ _id: decodedData.id });
+        if (user.firstname) {
+            hasProfile = true;
+        }
+        if (!user) {
+            return next(new ErrorHandler('User not found', 400));
+        }
+        return res.json({
+            success: true,
+            user,
+            hasProfile
+        });
+    } else {
+        return res.json({
+            success: false,
+            message: 'User must be logged in to get access to this page',
+        });
+    }
 });
 export const createPassword = catchAsyncErrors(async (req, res, next) => {
     const creatingToken = req.cookies.createPassword;
@@ -270,11 +302,20 @@ export const createPassword = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler("New password and Confirm password doesn't match", 403));
     }
 });
-export const logout = catchAsyncErrors(async (req, res, next) => {
-    res.clearCookie('token');
-    return res.redirect('/');
-    // res.status(200).json({
-    //     success: true,
-    //     message: 'Logged Out'
-    // });
+
+export const logout = catchAsyncErrors(async (req, res) => {
+    const { token } = req.body;
+    if (token) {
+        res.json({
+            success: true,
+            // result,
+            message: 'Token successfully removed'
+        });
+        console.log('Token successfully removed');
+    } else {
+        res.json({
+            success: false,
+            message: 'Token not found'
+        });
+    }
 });
