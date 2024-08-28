@@ -245,6 +245,24 @@ export const addProfile = catchAsyncErrors(async (req, res, next) => {
         user
     });
 });
+export const updateProfile = catchAsyncErrors(async (req, res, next) => {
+    const { token, data } = req.body;
+    if (!data) {
+        return next(new ErrorHandler('Please provide the required info', 400));
+    }
+    if (!token) {
+        return next(new ErrorHandler('Token not found', 500));
+    }
+    const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await userModel.findById({ _id: decodedData.id });
+    const User = await userModel.findOneAndUpdate({ email: user.email }, { firstname: data.firstname, lastname: data.lastname }, { runValidators: true, new: true });
+    await User.save();
+    console.log(User);
+    return res.json({
+        success: true,
+        user: User
+    });
+});
 
 export const home = catchAsyncErrors(async (req, res, next) => {
     const { token } = req.body;

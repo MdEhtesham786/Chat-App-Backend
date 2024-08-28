@@ -1,11 +1,12 @@
 import express from "express";
-import { register, login, forgotPassword, verifyOtp, logout, recoveryEmail, createPassword, addProfile, home, isLoggedInUser } from '../controllers/userController.js';
+import { register, login, forgotPassword, verifyOtp, logout, recoveryEmail, createPassword, addProfile, home, isLoggedInUser, updateProfile } from '../controllers/userController.js';
 const router = express.Router();
 router.post('/auth/sign-up', register);
 router.post('/auth/login', login);
 router.post('/auth/forgot', forgotPassword);
 router.post('/auth/verify-otp', verifyOtp);
 router.post('/auth/add-profile', addProfile);
+router.post('/auth/update-profile', updateProfile);
 router.post('/home', home);
 router.route('/auth/islogin').post(isLoggedInUser);
 
