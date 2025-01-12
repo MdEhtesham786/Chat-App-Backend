@@ -2,19 +2,32 @@ import mongoose from 'mongoose';
 import bcrypt from "bcrypt";
 import validator from 'validator';
 import jwt from "jsonwebtoken";
-
 import dotenv from "dotenv";
 dotenv.config();
 const chatSchema = new mongoose.Schema({
-    chatOwnersName: {
-        type: Array, ///['Ehtesham shaikh','Anurag']
-    },
     chatOwnersID: {
-        type: Array, ///[user8128931820938908,user0918230948109238409]
+        type: Array,
     },
-    messageData: {
-        type: Array//[ {author:Ehtesham,msg:Hii},{sender:anurag,receiver:ehtesham,msg:Bye},{},{},{}  ]
-    }
+    messageData: [
+        {
+            author: {
+                type: String,
+                required: true,
+            },
+            message: {
+                type: String,
+                required: true,
+            },
+            createdAt: {
+                type: String,
+                required: true,
+            },
+            readAt: {
+                type: String,
+                default: null,
+            },
+        }
+    ]
 },
     { timestamps: true });
 // userSchema.pre('save', async function (next) {

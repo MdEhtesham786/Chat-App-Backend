@@ -8,16 +8,67 @@ import jwt from "jsonwebtoken";
 
 export const getChat = catchAsyncErrors(async (req, res, next) => {
     const { userID } = req.params;
+    // console.log(userID);
     const { friendID } = req.body;
-    const chat = await chatModel.findOne({ $all: [userID, friendID] });
-    // console.log(chat);
+    const chat = await chatModel.findOne({
+        chatOwnersID: { $all: [userID, friendID] }, // Ensure both IDs exist
+        $expr: { $eq: [{ $size: "$chatOwnersID" }, 2] }, // Ensure array size is exactly 2
+
+    });
+    // {
+    //     "messageData": { $slice: -30 }, // Fetch only the latest 30 messages
+    // });
     if (!chat) {
-        return next(new ErrorHandler('No Chat found', 400));
+        return res.json({ success: false, chat: {} });
     }
     const friend = await userModel.findById(friendID);
+    // let userName = user.lastname ? user.firstname + ' ' + user.lastname : user.firstname;
+    const chatObj = {
+        ...chat.toObject(),
+        friendName: friend.lastname ? friend.firstname + ' ' + friend.lastname : friend.firstname,
+    };
+    // chatObj.messageData = chatObj.messageData.length > 10 ? chatObj.messageData.reverse() : chatObj.messageData;
+    chatObj.messageData = chatObj.messageData.reverse();
     return res.json({
         success: true,
-        chat,
-        friendName: friend.lastname ? friend.firstname + ' ' + friend.lastname : friend.firstname
+        chatObj,
+    });
+});
+export const sendMessage = catchAsyncErrors(async (req, res, next) => {
+    const { chatID, senderID, message } = req.body;
+    if (!chatID || !senderID || !message) {
+        return res.json({
+            success: false,
+            msg: 'Please provide all details'
+        });
+    }
+    const chat = await chatModel.findById(chatID);
+    if (!chat) {
+        return res.json({
+            success: false,
+            msg: 'Chat not found'
+        });
+    }
+    if (!chat.chatOwnersID.includes(senderID)) {
+        return res.json({
+            success: false,
+            msg: 'You are not the chat owner'
+        });
+    }
+    chat.messageData.push({
+        author: senderID, message, createdAt: new Date().toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true
+        }), readAt: null
+    });
+    await chat.save();
+    res.json({
+        success: true,
+        friendID: senderID
+
     });
 });

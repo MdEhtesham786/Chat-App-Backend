@@ -65,16 +65,7 @@ import { isAuthenticatedUser } from './middleware/auth.js';
 import jwt from "jsonwebtoken";
 import ErrorHandler from "./utils/errorHandler.js";
 // const productModel = require('./models/productModel.js');
-// io.on("connection", (socket) => {
-//     console.log('Connected', socket.id);
-//     socket.on('sendMessage', ({ room, message }) => {
-//         console.log(room, message);
-//         io.to(room).emit('receiveMessage', message);
-//     });
-//     socket.on('disconnect', () => {
-//         console.log('User disconnected', socket.id);
-//     });
-// });
+
 // app.use('/api/v1', productRoute);
 app.use('/api/v1/auth', userRoute);
 app.use('/api/v1/chat', chatRoute);
@@ -141,7 +132,8 @@ app.get('/deleteUser/:id', catchAsyncErrors(async (req, res, next) => {
 app.get('/custopmer-support', catchAsyncErrors(async (req, res, next) => {
     res.json({
         success: true,
-        msg: 'Customer Support'
+        msg: 'Customer Support',
+        tollFree: 8104589563
     });
 }));
 
@@ -163,18 +155,8 @@ const start = async () => {
                     socket.disconnect(); // Optionally disconnect invalid users
                 }
             });
-
-            // socket.on("isUserOnline", (friendID, callback) => {
-            //     if (onlineUsers[friendID]) {
-            //         console.log('online');
-            //         callback({ online: true, socketID: onlineUsers[friendID] });
-            //     } else {
-            //         console.log('offline');
-
-            //         callback({ online: false });
-            //     }
-            // });
             socket.on('friendRequest', (friendID, callback) => {
+                console.log(friendID);
                 if (onlineUsers[friendID]) {
                     console.log('Friend is online');
                     socket.to(onlineUsers[friendID]).emit('updatePendingRequest', true);
@@ -184,28 +166,18 @@ const start = async () => {
                     callback({ success: false, msg: 'Traditional Request Sent!' });
                 }
             });
-            // Friend request event (no longer needs to be called from client directly)
-            // socket.on("friendRequest", ({ userID, friendID, socketID }) => {
-            //     console.log(`Friend request from ${userID} to ${friendID}`);
-
-            //     // Emit friend request to the specific friend's socket
-            //     if (socketID) {
-            //         io.to(socketID).emit("friendRequest", { userID, friendID });
-            //         console.log(`Friend request sent to ${friendID} via Socket.IO`);
-            //     }
-            // });
-            socket.on('sendMessage', ({ room, message }) => {
-                console.log(room, message);
-                io.to(room).emit('receiveMessage', message);
+            socket.on('sendMessage', (friendID, callback) => {
+                console.log(friendID);
+                if (onlineUsers[friendID]) {
+                    console.log('Friend is online');
+                    // socket.to(onlineUsers[friendID]).emit('updatePendingRequest', true);
+                    socket.to(onlineUsers[friendID]).emit('updateReceiveMessage', true);
+                    callback({ success: true, msg: 'Live request sent!' });
+                } else {
+                    console.log('Friend is offline');
+                    callback({ success: false, msg: 'Traditional Message Sent!' });
+                }
             });
-            // Disconnect all connected sockets
-            // function disconnectAllSockets() {
-            //     io.sockets.sockets.forEach((socket) => {
-            //         socket.disconnect(true); // true forces the socket to disconnect
-            //     });
-            //     console.log("All sockets have been disconnected.");
-            // }
-            // setTimeout(disconnectAllSockets, 3000);
             socket.on("disconnect", () => {
                 for (const [userId, socketId] of Object.entries(onlineUsers)) {
                     if (socketId === socket.id) {

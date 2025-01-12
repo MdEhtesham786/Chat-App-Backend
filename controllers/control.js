@@ -65,7 +65,6 @@ export const acceptRequest = catchAsyncErrors(async (req, res, next) => {
     if (!userID || !pendingID) {
         return next(new ErrorHandler('User and Profile not found', 404));
     }
-
     const user = await userModel.findById(userID);
     const friend = await userModel.findById(pendingID);
     const isFriend = user.friendList.includes(pendingID);
@@ -87,11 +86,15 @@ export const acceptRequest = catchAsyncErrors(async (req, res, next) => {
             pendingRequest: pendingRequestArr
         });
     } else {
-
         user.friendList.push(pendingID);
         friend.friendList.push(userID);
         await user.save();
         await friend.save();
+        const newChat = new chatModel({
+            chatOwnersID: [userID, pendingID],
+            messageData: []
+        });
+        await newChat.save();
         const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });
         const friendListArr = await userModel.find({ _id: { $in: user.friendList } });//obj of pendingrequest ID users
         return res.json({
@@ -129,8 +132,12 @@ export const removeFriend = catchAsyncErrors(async (req, res, next) => {
     const { userID, friendID } = req.body;
     const user = await userModel.findById(userID);
     const friend = await userModel.findById(friendID);
+
     if (!user || !friend) {
-        return next(ErrorHandler('User or Profile not found'));
+        return res.json({
+            success: false,
+            msg: 'User and Friend not found'
+        });
     }
     const userUpdatedFriendList = user.friendList.filter((id) => {
         return friendID !== id;
@@ -146,7 +153,10 @@ export const removeFriend = catchAsyncErrors(async (req, res, next) => {
     });
     friend.friendList = friendUpdatedFriendList;
     await friend.save();
-
+    await chatModel.findOneAndDelete({
+        chatOwnersID: { $all: [userID, friendID] }, // Ensure both IDs exist
+        $expr: { $eq: [{ $size: "$chatOwnersID" }, 2] }, // Ensure array size is exactly 2
+    });
     const friendListArr = await userModel.find({ _id: { $in: user.friendList } });//obj of pendingrequest ID users 
     res.json({
         success: true,

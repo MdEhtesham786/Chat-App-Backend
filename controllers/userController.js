@@ -110,7 +110,7 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
         console.log('already a user', user.email);
         const info = await sendEmail({
             email: email,
-            subject: 'Ecommerce Password Recovery',
+            subject: 'Chateo Authentication',
             message
         });
         return res.json({
@@ -121,9 +121,10 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
         });
     } else {
         const user = new userModel({ email, otp: verificationCode });
+        await user.save();
         const info = await sendEmail({
             email: email,
-            subject: 'Ecommerce Password Recovery',
+            subject: 'Chateo Authentication',
             message
         });
         return res.json({
