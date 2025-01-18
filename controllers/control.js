@@ -9,7 +9,7 @@ import { onlineUsers } from "../server.js";
 import { io } from '../server.js';
 const latestVersion = {
     version: "1.1.0", // Update this when you release a new APK
-    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/a736c616-c71b-4a1b-9450-1365e61de18b"
+    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/9439c973-8519-4612-b248-470cc99d05c2"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
     return res.json(latestVersion);

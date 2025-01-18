@@ -23,7 +23,6 @@ const sendEmail = async (otp) => {
         const info = await transporter.sendMail(mailotpions);
         return { success: true, info };
     } catch (err) {
-        // console.log(err);
         return { success: false, err };
 
     }
