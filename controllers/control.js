@@ -7,6 +7,13 @@ import sendEmail from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
 import { onlineUsers } from "../server.js";
 import { io } from '../server.js';
+const latestVersion = {
+    version: "1.1.0", // Update this when you release a new APK
+    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/a736c616-c71b-4a1b-9450-1365e61de18b"
+};
+export const getVersion = catchAsyncErrors(async (req, res, next) => {
+    return res.json(latestVersion);
+});
 export const searchUsers = catchAsyncErrors(async (req, res, next) => {
     const { searchUsers } = req.body;
     const user = await userModel.find({ email: { $regex: searchUsers, $options: "i" } });
@@ -73,7 +80,6 @@ export const acceptRequest = catchAsyncErrors(async (req, res, next) => {
         return pendingID !== id;
     });
     user.pendingRequest = updatedPendingRequest;
-    console.log(updatedPendingRequest);
     if (isFriend) {
         await user.save();
         const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });
@@ -92,10 +98,12 @@ export const acceptRequest = catchAsyncErrors(async (req, res, next) => {
         await friend.save();
         const newChat = new chatModel({
             chatOwnersID: [userID, pendingID],
-            messageData: []
+            messageData: [],
+            latestMessage: {}
         });
-        await newChat.save();
+        await newChat.save().catch((err) => console.log(err));
         const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });
+        console.log(pendingRequestArr);
         const friendListArr = await userModel.find({ _id: { $in: user.friendList } });//obj of pendingrequest ID users
         return res.json({
             success: true,
@@ -121,6 +129,7 @@ export const friendList = catchAsyncErrors(async (req, res, next) => {
     const { userID } = req.body;
     const user = await userModel.findById(userID);
     const friendListArr = await userModel.find({ _id: { $in: user.friendList } });//obj of pendingrequest ID users
+
     res.json({
         success: true,
         friendList: friendListArr

@@ -1,5 +1,5 @@
 import express from "express";
-import { searchUsers, sendRequest, pendingRequest, friendList, declineRequest, acceptRequest, removeFriend } from "../controllers/control.js";
+import { searchUsers, sendRequest, pendingRequest, friendList, declineRequest, acceptRequest, removeFriend, getVersion } from "../controllers/control.js";
 const router = express.Router();
 // router.post('/:userID', getChat);
 router.post('/searchUsers', searchUsers);
@@ -9,4 +9,5 @@ router.post('/friendList', friendList);
 router.post('/declineRequest', declineRequest);
 router.post('/acceptRequest', acceptRequest);
 router.post('/removeFriend', removeFriend);
+router.get('/version', getVersion);
 export default router;

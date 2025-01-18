@@ -27,7 +27,12 @@ const chatSchema = new mongoose.Schema({
                 default: null,
             },
         }
-    ]
+    ],
+    latestMessage: {
+        type: Object,
+        required: true,
+        default: {}
+    }
 },
     { timestamps: true });
 // userSchema.pre('save', async function (next) {

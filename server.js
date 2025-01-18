@@ -29,6 +29,8 @@ import mongoose from "mongoose";
 // const multer = require('multer');
 // const upload = multer();
 
+// Store the latest APK version and download URL
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*'); // '*' allows any origin, replace with your specific domain for security.
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -172,7 +174,7 @@ const start = async () => {
                     console.log('Friend is online');
                     // socket.to(onlineUsers[friendID]).emit('updatePendingRequest', true);
                     socket.to(onlineUsers[friendID]).emit('updateReceiveMessage', true);
-                    callback({ success: true, msg: 'Live request sent!' });
+                    callback({ success: true, msg: 'Live message sent!' });
                 } else {
                     console.log('Friend is offline');
                     callback({ success: false, msg: 'Traditional Message Sent!' });

@@ -8,13 +8,15 @@ import jwt from "jsonwebtoken";
 
 export const getChat = catchAsyncErrors(async (req, res, next) => {
     const { userID } = req.params;
+    console.log(userID);
     // console.log(userID);
     const { friendID } = req.body;
+    console.log(friendID, 'friend id');
     const chat = await chatModel.findOne({
         chatOwnersID: { $all: [userID, friendID] }, // Ensure both IDs exist
         $expr: { $eq: [{ $size: "$chatOwnersID" }, 2] }, // Ensure array size is exactly 2
-
     });
+    console.log(chat);
     // {
     //     "messageData": { $slice: -30 }, // Fetch only the latest 30 messages
     // });
@@ -56,15 +58,12 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
         });
     }
     chat.messageData.push({
-        author: senderID, message, createdAt: new Date().toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true
-        }), readAt: null
+        author: senderID, message, createdAt: new Date().toISOString(), readAt: null
     });
+    chat.latestMessage = {
+        author: senderID, message, createdAt: new Date().toISOString(), readAt: null
+    };
+
     await chat.save();
     res.json({
         success: true,
