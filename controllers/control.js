@@ -8,8 +8,8 @@ import jwt from "jsonwebtoken";
 import { onlineUsers } from "../server.js";
 import { io } from '../server.js';
 const latestVersion = {
-    version: "1.1.0", // Update this when you release a new APK
-    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/9439c973-8519-4612-b248-470cc99d05c2"
+    version: "1.1.1", // Update this when you release a new APK
+    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/c4832413-5230-42d0-81c6-3987208af268"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
     return res.json(latestVersion);

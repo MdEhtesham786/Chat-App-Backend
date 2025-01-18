@@ -16,7 +16,6 @@ export const getChat = catchAsyncErrors(async (req, res, next) => {
         chatOwnersID: { $all: [userID, friendID] }, // Ensure both IDs exist
         $expr: { $eq: [{ $size: "$chatOwnersID" }, 2] }, // Ensure array size is exactly 2
     });
-    console.log(chat);
     // {
     //     "messageData": { $slice: -30 }, // Fetch only the latest 30 messages
     // });
@@ -24,7 +23,6 @@ export const getChat = catchAsyncErrors(async (req, res, next) => {
         return res.json({ success: false, chat: {} });
     }
     const friend = await userModel.findById(friendID);
-    // let userName = user.lastname ? user.firstname + ' ' + user.lastname : user.firstname;
     const chatObj = {
         ...chat.toObject(),
         friendName: friend.lastname ? friend.firstname + ' ' + friend.lastname : friend.firstname,
