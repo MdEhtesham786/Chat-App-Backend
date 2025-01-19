@@ -34,6 +34,22 @@ export const getChat = catchAsyncErrors(async (req, res, next) => {
         chatObj,
     });
 });
+export const getLatestMessage = catchAsyncErrors(async (req, res, next) => {
+    const { userID } = req.params;
+    // console.log(userID);
+    const { friendID } = req.body;
+    const chat = await chatModel.findOne({
+        chatOwnersID: { $all: [userID, friendID] }, // Ensure both IDs exist
+        $expr: { $eq: [{ $size: "$chatOwnersID" }, 2] }, // Ensure array size is exactly 2
+    });
+    // {
+    //     "messageData": { $slice: -30 }, // Fetch only the latest 30 messages
+    // });
+    res.json({
+        success: true,
+        latestMessage: chat.latestMessage
+    });
+});
 export const sendMessage = catchAsyncErrors(async (req, res, next) => {
     const { chatID, senderID, message } = req.body;
     if (!chatID || !senderID || !message) {
@@ -58,10 +74,10 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
     chat.messageData.push({
         author: senderID, message, createdAt: new Date().toISOString(), readAt: null
     });
+
     chat.latestMessage = {
         author: senderID, message, createdAt: new Date().toISOString(), readAt: null
     };
-
     await chat.save();
     res.json({
         success: true,

@@ -33,6 +33,7 @@ const chatSchema = new mongoose.Schema({
         required: true,
         default: {}
     }
+
 },
     { timestamps: true });
 // userSchema.pre('save', async function (next) {

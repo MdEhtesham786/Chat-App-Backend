@@ -120,7 +120,7 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
             user
         });
     } else {
-        const user = new userModel({ email, otp: verificationCode });
+        const user = new userModel({ email, otp: verificationCode, });
         await user.save();
         const info = await sendEmail({
             email: email,
@@ -282,11 +282,14 @@ export const isLoggedInUser = catchAsyncErrors(async (req, res, next) => {
     if (token) {
         const decodedData = jwt.verify(token, process.env.JWT_SECRET);
         const user = await userModel.findById({ _id: decodedData.id });
+        if (!user) {
+            return res.json({
+                success: false,
+                message: 'User not found'
+            });
+        }
         if (user.firstname) {
             hasProfile = true;
-        }
-        if (!user) {
-            return next(new ErrorHandler('User not found', 400));
         }
         return res.json({
             success: true,

@@ -59,7 +59,8 @@ const userSchema = new mongoose.Schema({
     pendingRequest: {
         type: Array,
         default: []
-    }
+    },
+
 
 });
 userSchema.pre('save', async function (next) {

@@ -179,6 +179,17 @@ const start = async () => {
                     callback({ success: false, msg: 'Traditional Message Sent!' });
                 }
             });
+            socket.on('latestMessage', (friendID, callback) => {
+                console.log(friendID);
+                if (onlineUsers[friendID]) {
+                    console.log('Friend is online');
+                    socket.to(onlineUsers[friendID]).emit('updateLatestMessage', true);
+                    callback({ success: true, msg: 'Live Latest Message sent!' });
+                } else {
+                    console.log('Friend is offline');
+                    callback({ success: false, msg: 'Traditional Latest Message Sent!' });
+                }
+            });
             socket.on("disconnect", () => {
                 for (const [userId, socketId] of Object.entries(onlineUsers)) {
                     if (socketId === socket.id) {
