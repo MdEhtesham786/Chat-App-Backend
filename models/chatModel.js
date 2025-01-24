@@ -30,8 +30,11 @@ const chatSchema = new mongoose.Schema({
     ],
     latestMessage: {
         type: Object,
-        required: true,
-        default: {}
+        default: undefined
+    },
+    unreadMessage: {
+        type: Object,
+        default: undefined
     }
 
 },

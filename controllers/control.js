@@ -8,8 +8,8 @@ import jwt from "jsonwebtoken";
 import { onlineUsers } from "../server.js";
 import { io } from '../server.js';
 const latestVersion = {
-    version: "1.1.3", // Update this when you release a new APK
-    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/124a2487-f705-4711-98d7-185404cb7f2b"
+    version: "1.1.4", // Update this when you release a new APK
+    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/eb2d42c0-ed87-494c-b8f2-1598c1a969a2"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
     return res.json(latestVersion);
@@ -33,6 +33,9 @@ export const sendRequest = catchAsyncErrors(async (req, res, next) => {
     if (!friend) {
         return next(new ErrorHandler('Profile not found', 404));
     }
+    if (userID === friendID) {
+        return next(new ErrorHandler('Cannot add yourself'));
+    }
     if (user.friendList.includes(friendID) || friend.friendList.includes(userID)) {
         return res.json({
             success: false,
@@ -40,7 +43,7 @@ export const sendRequest = catchAsyncErrors(async (req, res, next) => {
         });
     } else {
         if (!friend.pendingRequest.includes(userID)) {
-            friend.pendingRequest.push(userID);
+            friend.pendingRequest.unshift(userID);
             await friend.save();
             const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });
             res.json({ success: true, friend, user, pendingRequest: pendingRequestArr });
@@ -92,14 +95,18 @@ export const acceptRequest = catchAsyncErrors(async (req, res, next) => {
             pendingRequest: pendingRequestArr
         });
     } else {
-        user.friendList.push(pendingID);
-        friend.friendList.push(userID);
+        user.friendList.unshift(pendingID);
+        friend.friendList.unshift(userID);
         await user.save();
         await friend.save();
         const newChat = new chatModel({
             chatOwnersID: [userID, pendingID],
             messageData: [],
-            latestMessage: {}
+            latestMessage: undefined,
+            unreadMessage: {
+                [userID]: 0,
+                [pendingID]: 0
+            }
         });
         await newChat.save().catch((err) => console.log(err));
         const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });

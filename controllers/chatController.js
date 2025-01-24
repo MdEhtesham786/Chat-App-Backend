@@ -8,8 +8,6 @@ import jwt from "jsonwebtoken";
 
 export const getChat = catchAsyncErrors(async (req, res, next) => {
     const { userID } = req.params;
-    console.log(userID);
-    // console.log(userID);
     const { friendID } = req.body;
     console.log(friendID, 'friend id');
     const chat = await chatModel.findOne({
@@ -36,18 +34,31 @@ export const getChat = catchAsyncErrors(async (req, res, next) => {
 });
 export const getLatestMessage = catchAsyncErrors(async (req, res, next) => {
     const { userID } = req.params;
-    // console.log(userID);
     const { friendID } = req.body;
     const chat = await chatModel.findOne({
         chatOwnersID: { $all: [userID, friendID] }, // Ensure both IDs exist
         $expr: { $eq: [{ $size: "$chatOwnersID" }, 2] }, // Ensure array size is exactly 2
     });
-    // {
-    //     "messageData": { $slice: -30 }, // Fetch only the latest 30 messages
-    // });
-    res.json({
+    return res.json({
         success: true,
-        latestMessage: chat.latestMessage
+        latestMessage: chat.latestMessage,
+        unreadMessage: chat.unreadMessage,
+    });
+});
+export const readMessage = catchAsyncErrors(async (req, res, next) => {
+    const { userID } = req.params;
+    const { friendID } = req.body;
+    const chat = await chatModel.findOne({
+        chatOwnersID: { $all: [userID, friendID] }, // Ensure both IDs exist
+        $expr: { $eq: [{ $size: "$chatOwnersID" }, 2] }, // Ensure array size is exactly 2
+    });
+    chat.unreadMessage[userID] = 0;
+    chat.markModified('unreadMessage');
+    await chat.save();
+    return res.json({
+        success: true,
+        // latestMessage: chat.latestMessage,
+        unreadMessage: chat.unreadMessage,
     });
 });
 export const sendMessage = catchAsyncErrors(async (req, res, next) => {
@@ -71,6 +82,7 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
             msg: 'You are not the chat owner'
         });
     }
+    const receiverID = chat.chatOwnersID.find((id) => id !== senderID);
     chat.messageData.push({
         author: senderID, message, createdAt: new Date().toISOString(), readAt: null
     });
@@ -78,6 +90,10 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
     chat.latestMessage = {
         author: senderID, message, createdAt: new Date().toISOString(), readAt: null
     };
+
+    chat.unreadMessage[receiverID] += 1;
+    chat.markModified('unreadMessage');
+    // chat.unreadMessage[receiverID] = (chat.unreadMessage[receiverID] || 0) + 1;
     await chat.save();
     res.json({
         success: true,
