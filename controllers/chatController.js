@@ -5,7 +5,7 @@ import chatModel from "../models/chatModel.js";
 import { sendToken, sendCookie, } from '../utils/jwtToken.js';
 import sendEmail from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
-
+import sendPushNotification from "../utils/sendPushNotification.js";
 export const getChat = catchAsyncErrors(async (req, res, next) => {
     const { userID } = req.params;
     const { friendID } = req.body;
@@ -41,7 +41,7 @@ export const getLatestMessage = catchAsyncErrors(async (req, res, next) => {
     });
     return res.json({
         success: true,
-        latestMessage: chat.latestMessage,
+        latestMessage: chat.latestMessage || null,
         unreadMessage: chat.unreadMessage,
     });
 });
@@ -63,6 +63,14 @@ export const readMessage = catchAsyncErrors(async (req, res, next) => {
 });
 export const sendMessage = catchAsyncErrors(async (req, res, next) => {
     const { chatID, senderID, message } = req.body;
+    const user = await userModel.findById(senderID);
+    if (!user) {
+        return res.json({
+            success: false,
+            msg: 'Sender not found'
+        });
+    }
+
     if (!chatID || !senderID || !message) {
         return res.json({
             success: false,
@@ -83,6 +91,13 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
         });
     }
     const receiverID = chat.chatOwnersID.find((id) => id !== senderID);
+    const friend = await userModel.findById(receiverID);
+    if (!friend) {
+        return res.json({
+            success: false,
+            msg: 'Receiver not found'
+        });
+    }
     chat.messageData.push({
         author: senderID, message, createdAt: new Date().toISOString(), readAt: null
     });
@@ -95,9 +110,22 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
     chat.markModified('unreadMessage');
     // chat.unreadMessage[receiverID] = (chat.unreadMessage[receiverID] || 0) + 1;
     await chat.save();
+    const notificationMessage = {
+        to: friend.expoPushToken, // Replace with actual user ID,
+        "sound": "default",
+        "title": `Chateo Notification from ${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname}`,
+        "body": `${message}`,
+        "data": {
+            type: "sendMessage",
+            navigate: "AddFriend",
+            userID: senderID,
+            friendID: receiverID
+        }
+    };
     res.json({
         success: true,
-        friendID: senderID
+        friendID: senderID,
+        notificationMessage
 
     });
 });

@@ -80,6 +80,7 @@ export const recoveryEmail = catchAsyncErrors(async (req, res, next) => {
 });
 export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
     const { email } = req.body;
+    console.log('one');
     if (!email) {
         return next(new ErrorHandler('Please provide an Email', 400));
     }
@@ -89,6 +90,8 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
         verificationCode = Math.round((1000 + Math.random() * 9000));
         otpArr = verificationCode.toString().split('');
     }
+    console.log('two');
+
     // const resetPasswordUrl = `${req.protocol}://${req.get('host')}/api/v1/auth/reset-password/${resetToken}`;
     const message = `Please use the verification code below on verify page.\n\n ${verificationCode} \n\n if you have not requested then please ignore.`;
     let email_name = email.split('@');
@@ -107,12 +110,14 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
     if (user) {
         user.otp = verificationCode;
         await user.save({ validateBeforeSave: true });
+
         console.log('already a user', user.email);
         const info = await sendEmail({
             email: email,
             subject: 'Chateo Authentication',
             message
         });
+        console.log('OTP aara h');
         return res.json({
             success: true,
             hashedEmail,
@@ -144,7 +149,6 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
 export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
     const { data, userID } = req.body;
-
     if (!data || !userID) {
         return next(new ErrorHandler('Please provide necessary data', 404));
     }

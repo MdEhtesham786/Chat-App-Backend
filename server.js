@@ -26,8 +26,15 @@ const hostname = '127.0.0.1';
 const port = process.env.PORT || 5001;
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
+import sendPushNotification from "./utils/sendPushNotification.js";
 // const multer = require('multer');
 // const upload = multer();
+// import admin from "firebase-admin";
+// import serviceAccount from "path/to/serviceAccountKey.json";
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
 
 app.use((req, res, next) => {
@@ -60,9 +67,11 @@ mongoose.set('strictPopulate', false);
 import userRoute from "./routes/userRoute.js";
 import chatRoute from "./routes/chatRoute.js";
 import route from "./routes/route.js";
+import notificationRoute from "./routes/notificationRoute.js";
 // const productRoute = require('./routes/productRoute.js');
 // const orderRoute = require('./routes/orderRoutes.js');
 import { isAuthenticatedUser } from './middleware/auth.js';
+import { Expo } from "expo-server-sdk";
 import jwt from "jsonwebtoken";
 import ErrorHandler from "./utils/errorHandler.js";
 // const productModel = require('./models/productModel.js');
@@ -71,6 +80,7 @@ import ErrorHandler from "./utils/errorHandler.js";
 app.use('/api/v1/auth', userRoute);
 app.use('/api/v1/chat', chatRoute);
 app.use('/api/v1/', route);
+app.use('/api/v1/', notificationRoute);
 // app.use('/api/v1', orderRoute);
 app.use(errorMiddleware);
 app.post('/api/v1/makeSeller/', catchAsyncErrors(async (req, res, next) => {
@@ -85,6 +95,11 @@ app.post('/api/v1/makeSeller/', catchAsyncErrors(async (req, res, next) => {
         user
     });
 }));
+const expo = new Expo();
+
+// Store the Expo Push Tokens in your database (for simplicity, using an object)
+// let expoPushTokens = {}; // { userId: expoPushToken }
+
 app.get('/', isAuthenticatedUser, catchAsyncErrors(async (req, res) => {
 
     if (req.token) {
@@ -130,7 +145,7 @@ app.get('/deleteUser/:id', catchAsyncErrors(async (req, res, next) => {
         res.send('send userId of the user you want to delete in params');
     }
 }));
-app.get('/custopmer-support', catchAsyncErrors(async (req, res, next) => {
+app.get('/customer-support', catchAsyncErrors(async (req, res, next) => {
     res.json({
         success: true,
         msg: 'Customer Support',
@@ -167,16 +182,24 @@ const start = async () => {
                     callback({ success: false, msg: 'Traditional Request Sent!' });
                 }
             });
-            socket.on('sendMessage', (friendID, callback) => {
-                console.log(friendID);
-                if (onlineUsers[friendID]) {
-                    console.log('Friend is online');
-                    // socket.to(onlineUsers[friendID]).emit('updatePendingRequest', true);
-                    socket.to(onlineUsers[friendID]).emit('updateReceiveMessage', true);
-                    callback({ success: true, msg: 'Live message sent!' });
-                } else {
-                    console.log('Friend is offline');
-                    callback({ success: false, msg: 'Traditional Message Sent!' });
+            socket.on('sendMessage', async (friendID, notificationMessage, callback) => {
+                try {
+                    console.log(friendID);
+                    if (onlineUsers[friendID]) {
+                        console.log('Friend is online');
+                        // socket.to(onlineUsers[friendID]).emit('updatePendingRequest', true);
+                        socket.to(onlineUsers[friendID]).emit('updateReceiveMessage', true);
+                        callback({ success: true, msg: 'Live message sent!' });
+                        await sendPushNotification(notificationMessage);
+                    } else {
+                        if (notificationMessage) {
+                            console.log('Notification sent');
+                        }
+                        console.log('Friend is offline');
+                        callback({ success: false, msg: 'Traditional Message Sent!' });
+                    }
+                } catch (err) {
+                    console.log(err);
                 }
             });
             socket.on('latestMessage', (friendID, callback) => {

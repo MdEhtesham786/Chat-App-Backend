@@ -7,8 +7,9 @@ import sendEmail from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
 import { onlineUsers } from "../server.js";
 import { io } from '../server.js';
+import sendPushNotification from "../utils/sendPushNotification.js";
 const latestVersion = {
-    version: "1.1.4", // Update this when you release a new APK
+    version: "1.1.5", // Update this when you release a new APK
     apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/eb2d42c0-ed87-494c-b8f2-1598c1a969a2"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
@@ -22,7 +23,12 @@ export const searchUsers = catchAsyncErrors(async (req, res, next) => {
         searchUsers: user
     });
 });
-
+export const checkBackend = catchAsyncErrors(async (req, res, next) => {
+    res.json({
+        success: true,
+        msg: 'Backend is running'
+    });
+});
 export const sendRequest = catchAsyncErrors(async (req, res, next) => {
     const { userID, friendID } = req.body;
     if (!userID || !friendID) {
@@ -34,7 +40,10 @@ export const sendRequest = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Profile not found', 404));
     }
     if (userID === friendID) {
-        return next(new ErrorHandler('Cannot add yourself'));
+        return res.json({
+            success: false,
+            msg: 'Cannot Add yourself'
+        });
     }
     if (user.friendList.includes(friendID) || friend.friendList.includes(userID)) {
         return res.json({
@@ -46,6 +55,20 @@ export const sendRequest = catchAsyncErrors(async (req, res, next) => {
             friend.pendingRequest.unshift(userID);
             await friend.save();
             const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });
+            console.log(friend.expoPushToken, friend.firstname, 'lund fakir');
+            const message = {
+                to: friend.expoPushToken, // Friend's Expo Push Token
+                sound: "default",
+                title: "Chateo Notification",
+                body: `${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname} sent you a friend request!`,
+                data: {
+                    type: "friendRequest",
+                    navigate: "AddFriend",
+
+                }
+            };
+            await sendPushNotification(message).catch(err => console.log('badaerror', err));
+
             res.json({ success: true, friend, user, pendingRequest: pendingRequestArr });
         } else {
             res.json({ success: false, msg: "Request already sent" });
@@ -181,3 +204,4 @@ export const removeFriend = catchAsyncErrors(async (req, res, next) => {
     });
 
 });
+

@@ -11,7 +11,11 @@ const sendEmail = async (otp) => {
             },
             connectionTimeout: 30000,
             greetingTimeout: 30000,
-            socketTimeout: 30000
+            socketTimeout: 30000,
+            tls: {
+                rejectUnauthorized: false, // ⚠️ This bypasses SSL validation (use only for testing)
+            },
+
         });
 
         const mailotpions = {
