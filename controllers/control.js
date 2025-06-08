@@ -10,7 +10,7 @@ import { io } from '../server.js';
 import sendPushNotification from "../utils/sendPushNotification.js";
 const latestVersion = {
     version: "1.1.6", // Update this when you release a new APK
-    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/eb2d42c0-ed87-494c-b8f2-1598c1a969a2"
+    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/chateo/builds/da30e916-54a3-4520-975f-52c5c51a8855"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
     return res.json(latestVersion);
