@@ -9,7 +9,7 @@ import { onlineUsers } from "../server.js";
 import { io } from '../server.js';
 import sendPushNotification from "../utils/sendPushNotification.js";
 const latestVersion = {
-    version: "1.1.5", // Update this when you release a new APK
+    version: "1.1.6", // Update this when you release a new APK
     apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/frontend/builds/eb2d42c0-ed87-494c-b8f2-1598c1a969a2"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
@@ -55,15 +55,17 @@ export const sendRequest = catchAsyncErrors(async (req, res, next) => {
             friend.pendingRequest.unshift(userID);
             await friend.save();
             const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });
-            console.log(friend.expoPushToken, friend.firstname, 'lund fakir');
+            console.log(friend.expoPushToken, user.expoPushToken, friend.firstname, 'lund fakir');
             const message = {
                 to: friend.expoPushToken, // Friend's Expo Push Token
                 sound: "default",
                 title: "Chateo Notification",
+                priority: "high",
                 body: `${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname} sent you a friend request!`,
                 data: {
                     type: "friendRequest",
                     navigate: "AddFriend",
+                    friendID: userID,// ID of the user who sent the request
 
                 }
             };

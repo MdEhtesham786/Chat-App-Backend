@@ -112,10 +112,10 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
     await chat.save();
     const notificationMessage = {
         to: friend.expoPushToken, // Replace with actual user ID,
-        "sound": "default",
-        "title": `Chateo Notification from ${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname}`,
-        "body": `${message}`,
-        "data": {
+        sound: "default",
+        title: `Chateo Notification from ${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname}`,
+        body: `${message}`,
+        data: {
             type: "sendMessage",
             navigate: "AddFriend",
             userID: senderID,
