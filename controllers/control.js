@@ -9,8 +9,8 @@ import { onlineUsers } from "../server.js";
 import { io } from '../server.js';
 import sendPushNotification from "../utils/sendPushNotification.js";
 const latestVersion = {
-    version: "1.1.7", // Update this when you release a new APK
-    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/chateo/builds/8103a95e-385e-4155-a9c4-57ba1c4c7eda"
+    version: "1.1.8", // Update this when you release a new APK
+    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/chateo/builds/1566008b-ea48-4968-a24a-6d3e9ee95914"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
     const { version } = req.body;
@@ -70,7 +70,7 @@ export const sendRequest = catchAsyncErrors(async (req, res, next) => {
                 },
                 // Add this for Android large icon (e.g., profile pic)
                 android: {
-                    image: user.profilePictureURL // full HTTPS URL of the sender's profile picture
+                    image: "https://res.cloudinary.com/dsfb9ywd2/image/upload/v1749448336/icon_xolpvb.png" // full HTTPS URL of the sender's profile picture
                 }
             };
             await sendPushNotification(message).catch(err => console.log('badaerror', err));
