@@ -41,7 +41,7 @@ export const getLatestMessage = catchAsyncErrors(async (req, res, next) => {
     });
     return res.json({
         success: true,
-        latestMessage: chat.latestMessage || null,
+        latestMessage: chat.latestMessage || '',
         unreadMessage: chat.unreadMessage,
     });
 });
