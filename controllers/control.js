@@ -10,7 +10,7 @@ import { io } from '../server.js';
 import sendPushNotification from "../utils/sendPushNotification.js";
 const latestVersion = {
     version: "1.1.6", // Update this when you release a new APK
-    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/chateo/builds/da30e916-54a3-4520-975f-52c5c51a8855"
+    apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/chateo/builds/2f72546e-b6c3-4d66-9434-94d2a0452533"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
     return res.json(latestVersion);
@@ -55,18 +55,20 @@ export const sendRequest = catchAsyncErrors(async (req, res, next) => {
             friend.pendingRequest.unshift(userID);
             await friend.save();
             const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });
-            console.log(friend.expoPushToken, user.expoPushToken, friend.firstname, 'lund fakir');
             const message = {
                 to: friend.expoPushToken, // Friend's Expo Push Token
                 sound: "default",
-                title: "Chateo Notification",
-                priority: "high",
+                title: "Chateo",
                 body: `${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname} sent you a friend request!`,
+                priority: "high",
                 data: {
                     type: "friendRequest",
                     navigate: "AddFriend",
-                    friendID: userID,// ID of the user who sent the request
-
+                    friendID: userID
+                },
+                // Add this for Android large icon (e.g., profile pic)
+                android: {
+                    image: user.profilePictureURL // full HTTPS URL of the sender's profile picture
                 }
             };
             await sendPushNotification(message).catch(err => console.log('badaerror', err));
@@ -103,7 +105,6 @@ export const acceptRequest = catchAsyncErrors(async (req, res, next) => {
     const user = await userModel.findById(userID);
     const friend = await userModel.findById(pendingID);
     const isFriend = user.friendList.includes(pendingID);
-
     const updatedPendingRequest = user.pendingRequest.filter((id) => {
         return pendingID !== id;
     });
@@ -135,8 +136,25 @@ export const acceptRequest = catchAsyncErrors(async (req, res, next) => {
         });
         await newChat.save().catch((err) => console.log(err));
         const pendingRequestArr = await userModel.find({ _id: { $in: user.pendingRequest } });
-        console.log(pendingRequestArr);
         const friendListArr = await userModel.find({ _id: { $in: user.friendList } });//obj of pendingrequest ID users
+        const message = {
+            to: friend.expoPushToken, // Friend's Expo Push Token
+            sound: "default",
+            title: "Chateo",
+            priority: "high",
+            body: `${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname} accepted your friend request!`,
+            data: {
+                type: "friendRequest",
+                navigate: "Message",
+                friendID: userID,// ID of the user who sent the request
+
+            },
+            // Add this for Android large icon (e.g., profile pic)
+            android: {
+                image: user.profilePictureURL // full HTTPS URL of the sender's profile picture
+            }
+        };
+        await sendPushNotification(message).catch(err => console.log('badaerror', err));
         return res.json({
             success: true,
             user,

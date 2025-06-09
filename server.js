@@ -120,15 +120,6 @@ app.get('/users', catchAsyncErrors(async (req, res, next) => {
     res.json({ nhbits: 1, allUsers });
 }));
 app.post('/api/v1/', async (req, res) => {
-    // const verify = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
-    // const allProduct = await productModel.find({ productOwnerId: verify.id });
-    // allProduct[0].images[0].url;
-    // allProduct.forEach((product) => {
-    //     let newDate = '';
-    //     console.log(product.numOfReviews);
-    // console.log(String(product.createdAt).split('GMT')[0].split(' '));
-
-    // });
     const users = await userModel.find();
     res.status(200).json({
         nhBits: users.length,

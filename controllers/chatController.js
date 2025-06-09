@@ -111,17 +111,21 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
     // chat.unreadMessage[receiverID] = (chat.unreadMessage[receiverID] || 0) + 1;
     await chat.save();
     const notificationMessage = {
-        to: friend.expoPushToken, // Replace with actual user ID,
+        to: friend.expoPushToken, // Friend's Expo Push Token
         sound: "default",
-        title: `Chateo Notification from ${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname}`,
+        title: `${user.lastname ? user.firstname + ' ' + user.lastname : user.firstname}`,
+        priority: "high",
         body: `${message}`,
         data: {
             type: "sendMessage",
-            navigate: "AddFriend",
+            navigate: "Message",
             userID: senderID,
             friendID: receiverID
+
         }
     };
+    console.log('do baar kyu');
+    await sendPushNotification(notificationMessage).catch(err => console.log('badaerror', err));
     res.json({
         success: true,
         friendID: senderID,

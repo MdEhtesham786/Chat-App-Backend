@@ -28,7 +28,7 @@ export const sendNotification = catchAsyncErrors(async (req, res, next) => {
 export const saveExpoPushToken = catchAsyncErrors(async (req, res, next) => {
     const { token, expoToken } = req.body;
     console.log(token, expoToken);
-    const decodedData = await jwt.verify(token, process.env.JWT_SECRET);
+    const decodedData = jwt.verify(token, process.env.JWT_SECRET);
     const user = await userModel.findById(decodedData.id); // Modify this based on your database structure
 
     if (!user || !expoToken) {
