@@ -9,7 +9,7 @@ import { onlineUsers } from "../server.js";
 import { io } from '../server.js';
 import sendPushNotification from "../utils/sendPushNotification.js";
 const latestVersion = {
-    version: "1.1.6", // Update this when you release a new APK
+    version: "1.1.7", // Update this when you release a new APK
     apkUrl: "https://expo.dev/accounts/ehtesham-shaikh/projects/chateo/builds/2f72546e-b6c3-4d66-9434-94d2a0452533"
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
