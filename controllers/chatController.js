@@ -122,9 +122,11 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
             userID: senderID,
             friendID: receiverID
 
+        },
+        android: {
+            image: user.avatar?.url // full HTTPS URL of the sender's profile picture
         }
     };
-    console.log('do baar kyu');
     await sendPushNotification(notificationMessage).catch(err => console.log('badaerror', err));
     res.json({
         success: true,

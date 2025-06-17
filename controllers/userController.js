@@ -4,6 +4,9 @@ import userModel from "../models/userModel.js";
 import { sendToken, sendCookie, } from '../utils/jwtToken.js';
 import sendEmail from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
+import cloudinary from "../utils/cloudinary.js";
+import fs from 'fs';
+
 
 export const login = catchAsyncErrors(async (req, res, next) => {
 
@@ -271,7 +274,41 @@ export const updateProfile = catchAsyncErrors(async (req, res, next) => {
         user: User
     });
 });
+export const uploadProfilePic = catchAsyncErrors(async (req, res, next) => {
+    const { token } = req.body;
+    if (!token) next(new ErrorHandler('Token not found', 500));
+    const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await userModel.findById({ _id: decodedData.id });
+    if (!user) next(new ErrorHandler('User not found', 404));
+    if (!req.file || !req.file.path) {
+        return res.status(400).json({ success: false, error: 'No file uploaded' });
+    }
+    if (user.avatar?.public_Id) {
+        await cloudinary.uploader.destroy(`profile_pictures/${user.avatar.public_Id}`).then(res => console.log('previous image removed from cloudinary', res));
+    }
+    const result = await cloudinary.uploader.upload(req.file.path, {
+        // folder: 'profile_pictures', // optional
+        resource_type: 'image',
+    });
+    if (!result) next(new ErrorHandler('Image upload failed', 500));
 
+    user.avatar = { url: result?.secure_url, public_Id: result?.original_filename };
+    await user.save();
+    res.json({
+        success: true,
+        message: 'Profile picture uploaded successfully',
+        imageUrl: result.secure_url,
+        user
+    });
+
+    // res.status(200).json({
+    //     success: true,
+    //     user: user._id
+    //     //   imageUrl: .profilePic,
+    // });
+
+
+});
 export const home = catchAsyncErrors(async (req, res, next) => {
     const { token } = req.body;
     // const User = await userModel.findOne({ email: user.email });

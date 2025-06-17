@@ -10,6 +10,5 @@ router.post('/declineRequest', declineRequest);
 router.post('/acceptRequest', acceptRequest);
 router.post('/removeFriend', removeFriend);
 router.post('/checkBackend', checkBackend);
-
 router.post('/version', getVersion);
 export default router;

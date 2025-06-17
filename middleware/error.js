@@ -1,6 +1,5 @@
 import ErrorHandler from '../utils/errorHandler.js';
 export default (err, req, res, next) => {
-    console.log('dekhte', err);
     err.statusCode = err.statusCode || 500;
     err.message = err.message || "Internal Server Error";
     //Wrong mongodb id error

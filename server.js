@@ -2,6 +2,7 @@
 // const require = createRequire(import.meta.url);
 import dotenv from "dotenv";
 dotenv.config();
+
 //Handling Uncaught Execption
 process.on('uncaughtException', err => {
     console.log(`Error: ${err.message}`);
@@ -175,6 +176,7 @@ const start = async () => {
             });
             socket.on('sendMessage', async (friendID, notificationMessage, callback) => {
                 try {
+                    console.log('idhra maa chudaya');
                     console.log(friendID);
                     if (onlineUsers[friendID]) {
                         console.log('Friend is online');
