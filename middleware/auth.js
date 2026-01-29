@@ -25,7 +25,6 @@ export const isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
 });
 export const authorizeRoles = (...roles) => {
     return (req, res, next) => {
-        // console.log(req.user);
         if (!req.user) {
             return next(new ErrorHandler('Token expired, Please login again'));
         }

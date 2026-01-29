@@ -8,14 +8,12 @@ export default (err, req, res, next) => {
         err = new ErrorHandler(message, 400);
     }
     if (err.name === 'TokenExpiredError') {
-        console.log(err.name);
         return res.json({
             success: false,
             msg: 'TokenExpiredError'
         });
     }
     if (err.name === 'JsonWebTokenError') {
-        console.log(err.name);
         return res.json({
             success: false,
             msg: 'JsonWebTokenError'

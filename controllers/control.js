@@ -14,12 +14,12 @@ const latestVersion = {
 };
 export const getVersion = catchAsyncErrors(async (req, res, next) => {
     console.log('Version Check Requested',latestVersion);
-    // console.log('Current Version:', version, 'latest version:', latestVersion.version);
     return res.json(latestVersion);
 });
 export const searchUsers = catchAsyncErrors(async (req, res, next) => {
     const { searchUsers } = req.body;
-    const user = await userModel.find({ email: { $regex: searchUsers, $options: "i" } });
+     const keyword = (searchUsers || "").toLowerCase().replace(/\s+/g, "");
+    const user = await userModel.find({ email: { $regex: keyword, $options: "i" } });
     res.json({
         success: true,
         searchUsers: user

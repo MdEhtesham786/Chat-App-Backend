@@ -152,7 +152,6 @@ const start = async () => {
         io.on("connection", (socket) => {
             console.log(`A new user connected with socket ID: ${socket.id}`);
             socket.on("login", (userId) => {
-                console.log(userId);
                 if (userId) { // Validate the userId (e.g., check if logged in)
                     onlineUsers[userId] = socket.id; // Add userId to onlineUsers
 
@@ -164,7 +163,6 @@ const start = async () => {
                 }
             });
             socket.on('friendRequest', (friendID, callback) => {
-                console.log(friendID);
                 if (onlineUsers[friendID]) {
                     console.log('Friend is online');
                     socket.to(onlineUsers[friendID]).emit('updatePendingRequest', true);
@@ -176,8 +174,6 @@ const start = async () => {
             });
             socket.on('sendMessage', async (friendID, notificationMessage, callback) => {
                 try {
-                    console.log('idhra maa chudaya');
-                    console.log(friendID);
                     if (onlineUsers[friendID]) {
                         console.log('Friend is online');
                         // socket.to(onlineUsers[friendID]).emit('updatePendingRequest', true);
@@ -196,7 +192,6 @@ const start = async () => {
                 }
             });
             socket.on('latestMessage', (friendID, callback) => {
-                console.log(friendID);
                 if (onlineUsers[friendID]) {
                     console.log('Friend is online');
                     socket.to(onlineUsers[friendID]).emit('updateLatestMessage', true);

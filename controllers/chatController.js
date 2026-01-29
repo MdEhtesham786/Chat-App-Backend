@@ -9,7 +9,6 @@ import sendPushNotification from "../utils/sendPushNotification.js";
 export const getChat = catchAsyncErrors(async (req, res, next) => {
     const { userID } = req.params;
     const { friendID } = req.body;
-    console.log(friendID, 'friend id');
     const chat = await chatModel.findOne({
         chatOwnersID: { $all: [userID, friendID] }, // Ensure both IDs exist
         $expr: { $eq: [{ $size: "$chatOwnersID" }, 2] }, // Ensure array size is exactly 2
@@ -119,8 +118,9 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
         data: {
             type: "sendMessage",
             navigate: "Message",
-            userID: senderID,
-            friendID: receiverID
+            userID: receiverID,
+            friendID: senderID,
+            avatar: user.avatar?.url
 
         },
         android: {

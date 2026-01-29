@@ -13,7 +13,6 @@ export const login = catchAsyncErrors(async (req, res, next) => {
     const { email, password, remember } = req.body;
     if (email) {
         const user = await userModel.findOne({ email }).select('+password');
-        // console.log(user);
         if (!user) {
             return next(new ErrorHandler('Invalid Email or Password'), 401);
         }
@@ -39,7 +38,6 @@ export const login = catchAsyncErrors(async (req, res, next) => {
 });
 export const register = catchAsyncErrors(async (req, res, next) => {
     const { username, email, password, confirm_password } = req.body;
-    console.log(req.body);
     if (email) {
         const Users = await userModel.findOne({ email });
         if (!Users) {
@@ -77,7 +75,6 @@ export const recoveryEmail = catchAsyncErrors(async (req, res, next) => {
     const user = await userModel.findOne({ _id: verify.id });
     user.recoveryEmail = recovery_email;
     await user.save({ validateBeforeSave: false });
-    console.log('add');
     res.clearCookie('addRecoveryEmail');
     return res.status(200).redirect('/api/v1/auth/login');
 });
@@ -118,7 +115,6 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
             subject: 'Chateo Authentication',
             message
         });
-        console.log('OTP aara h');
         return res.json({
             success: true,
             hashedEmail,
@@ -141,11 +137,6 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
         });
     }
-    // await user.save({ validateBeforeSave: true });
-    // const token = sendToken(user, process.env.JWT_EXPIRE);
-    // console.log('Token', token);
-    // sendCookie('verifyOtp', token, 120000, res);
-
 });
 
 export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
@@ -163,20 +154,6 @@ export const verifyOtp = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Please provide OTP', 400));
     }
     let verificationCode = otp;
-    // const user = await userModel.findOne({ email });
-    // console.log(user);
-    // if (!token) {
-    // user.otp = undefined;
-    // await user.save({ validateBeforeSave: true });
-    // console.log('verification token expired');
-    // return next(new ErrorHandler('verification token expired', 403));
-    // }
-    // const verify = jwt.verify(token, process.env.JWT_SECRET);
-    // const user = await userModel.findById({ _id: verify.id });
-    // if (!user) {
-    // console.log('User not found');
-    // return next(new ErrorHandler('User not found'));
-    // }
     const OTP = user.otp;
     if (!OTP) {
         user.otp = null;
@@ -248,7 +225,6 @@ export const addProfile = catchAsyncErrors(async (req, res, next) => {
     const decodedData = jwt.verify(token, process.env.JWT_SECRET);
     const user = await userModel.findById({ _id: decodedData.id });
     const User = await userModel.findOneAndUpdate({ email: user.email }, { firstname: data.firstname, lastname: data.lastname }, { runValidators: true, new: true });
-    console.log(User);
     await User.save();
     return res.json({
         success: true,
@@ -353,7 +329,6 @@ export const createPassword = catchAsyncErrors(async (req, res, next) => {
     }
     const user = await userModel.findById({ _id: verify.id });
     const { new_password, confirm_password } = req.body;
-    console.log('new password ', new_password);
     if (!new_password || !confirm_password) {
         return next(new ErrorHandler('Please fill the input', 400));
     }
